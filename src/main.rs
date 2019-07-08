@@ -53,7 +53,7 @@ fn checksum(path: &String) -> Vec<u8> {
 /// Disjoint sets `[s1, s2, ...]` where each set `s` contains filepaths to files
 /// whose checksums are identical. In other words, given two files `f1` and `f2`,
 /// `checksum(f1) == checksum(f2)` is they are in the same set, `!=` otherwise.
-fn uniq_via_checksum(paths: &Box<HashSet<String>>) -> impl Iterator<Item = Box<HashSet<String>>> {
+fn disjoint_sets_via_checksum(paths: &Box<HashSet<String>>) -> impl Iterator<Item = Box<HashSet<String>>> {
     // the hashmap to drive it all
     let mut checksum_to_files: HashMap<Vec<u8>, Box<HashSet<String>>> = HashMap::new();
 
@@ -91,7 +91,7 @@ fn uniq_via_checksum(paths: &Box<HashSet<String>>) -> impl Iterator<Item = Box<H
 /// Disjoint sets `[s1, s2, ...]` where each set `s` contains filepaths to files
 /// whose size in bytes are identical. In other words, given two files `f1` and `f2`,
 /// `bytes(f1) == bytes(f2)` is they are in the same set, `!=` otherwise.
-fn disjoint_size_sets(path: &str) -> impl Iterator<Item = Box<HashSet<String>>> {
+fn disjoint_sets_via_size(path: &str) -> impl Iterator<Item = Box<HashSet<String>>> {
     // hashmap to drive it all
     let mut size_to_files = HashMap::new();
 
@@ -133,8 +133,8 @@ fn main() {
         _ => panic!("first arg should be the root of the search"),
     };
 
-    let mut conflict_sets: Vec<Vec<String>> = disjoint_size_sets(root)
-        .flat_map(|set| uniq_via_checksum(&set)) // sets of colliding checksums
+    let mut conflict_sets: Vec<Vec<String>> = disjoint_sets_via_size(root)
+        .flat_map(|set| disjoint_sets_via_checksum(&set)) // sets of colliding checksums
         .filter(|set| set.len() > 1) // only those that actually collide
         .map(|set| set.iter().cloned().collect::<Vec<String>>()) // as vec, for printing
         .map(|mut vec| {
