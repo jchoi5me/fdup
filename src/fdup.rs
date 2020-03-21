@@ -1,4 +1,4 @@
-use rayon::iter::ParallelBridge;
+use colmac::*;
 use rayon::prelude::*;
 use std::borrow::Borrow;
 use std::collections::HashMap;
@@ -67,11 +67,12 @@ where
             HashMap::<K, Vec<T>>::with_capacity(mapping_len),
             |mut acc, (key, item)| {
                 // if acc[key] is None, acc[key] = vec![item], else acc[key].push(item)
-                if acc.contains_key(&key) {
-                    acc.get_mut(&key).unwrap().push(item);
-                } else {
-                    let val = vec![item];
-                    acc.insert(key, val);
+                match acc.get_mut(&key) {
+                    Some(vec) => vec.push(item),
+                    None => {
+                        let val = vec![item];
+                        acc.insert(key, val);
+                    }
                 };
                 acc
             },
@@ -81,11 +82,10 @@ where
         .filter(move |v| v.len() > threshold)
 }
 
-pub fn duplicate_files(path: &Path) -> impl Iterator<Item = Vec<PathBuf>> {
+pub fn duplicate_files(sort_vec: bool, path: &Path) -> impl Iterator<Item = Vec<PathBuf>> {
     // get all files, ignoring all errors
     let files: Vec<_> = WalkDir::new(&path)
         .into_iter()
-        .par_bridge()
         .filter_map(|entry_res| match entry_res {
             Ok(entry) => Some(entry.path().to_path_buf()),
             Err(err) => {
@@ -100,30 +100,21 @@ pub fn duplicate_files(path: &Path) -> impl Iterator<Item = Vec<PathBuf>> {
     // 3. print each one as json
     disjoint_by_filter_map(&filesize, 1, &files)
         .flat_map(|set| disjoint_by_filter_map(&checksum, 1, &set))
+        .map(move |vec| match sort_vec {
+            true => sorted!(vec),
+            false => vec,
+        })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use colmac::*;
-    use rayon::prelude::*;
     use std::collections::HashSet;
-    use std::env;
     use std::fs::create_dir_all;
     use std::fs::read_to_string;
     use std::fs::remove_dir_all;
     use std::fs::File;
     use std::io::Write;
-
-    fn test_data() -> Vec<(&'static str, &'static str)> {
-        vec![
-            ("d1/f1", ""),
-            ("d1/f2", ""),
-            ("d1/d2/f3", "a\nbc2"),
-            ("d1/d2/d3/f4", "abcde"),
-            ("d1/d2/d3/d4/f5", "a\nbc2"),
-        ]
-    }
 
     #[test]
     fn fdup() {
@@ -150,8 +141,9 @@ mod tests {
             assert_eq!(content, read_to_string(&path_buf).unwrap());
         });
 
-        let results: HashSet<Vec<PathBuf>> =
-            duplicate_files(&test_dir).map(|v| sorted!(v)).collect();
+        let results: HashSet<Vec<PathBuf>> = duplicate_files(false, &test_dir)
+            .map(|v| sorted!(v))
+            .collect();
         let expected = hashset![
             sorted!(vec![test_dir.join("d1/f1"), test_dir.join("d1/f2")]),
             sorted!(vec![

@@ -8,7 +8,7 @@ use clargs::*;
 use fdup::*;
 
 fn main() {
-    let Opt { root } = Opt::from_args();
+    let Opt { sort_vec, root } = Opt::from_args();
 
-    duplicate_files(&root).for_each(|vec| println!("{:?}", vec));
+    duplicate_files(sort_vec, &root).for_each(|vec| println!("{:?}", vec));
 }
