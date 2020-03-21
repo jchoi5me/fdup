@@ -1,6 +1,6 @@
 [package]
 name = "fdup"
-version = "2.0.1"
+version = "2.0.2"
 authors = ["Jack <jackwchoi@pm.me>"]
 edition = "2018"
 description = "find duplicate files recursively"

@@ -2,7 +2,6 @@ use structopt::StructOpt;
 
 mod clargs;
 mod fdup;
-mod util;
 
 use clargs::*;
 use fdup::*;
