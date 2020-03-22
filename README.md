@@ -1,36 +1,31 @@
-# trim
+# fdup
 
-[![trim-crate](https://img.shields.io/crates/v/trim.svg)](https://crates.io/crates/trim)
+[![fdup-crate](https://img.shields.io/crates/v/fdup.svg)](https://crates.io/crates/fdup)
 
-- [crates.io](https://crates.io/crates/trim)
-
-`trim` was inspired by the auto-trimming feature of [Atom](https://atom.io/), where trailing whitespace of every line is removed, and trailing newlines are replaced with a single newline.
+- [crates.io](https://crates.io/crates/fdup)
 
 ## Table of Contents
 
-1. [trim](#trim)
+1. [fdup](#fdup)
     1. [Overview](#overview)
 
 ## Overview
 
 ```bash
 ~
-  $ trim --help
-trim 1.2.1
+  $ fdup --help
+fdup 2.0.2
 Jack <jackwchoi@pm.me>
-trim whitespaces from files
+find duplicate files recursively
 
 USAGE:
-    trim [FLAGS] [files]...
+    fdup [FLAGS] <root>
 
 FLAGS:
-    -h, --help               Prints help information
-    -i, --in-place           trim <files> in-place, overwritting the content of the files atomically
-    -N, --supress-newline    suppress outputting the trailing `\n` in the last line
-    -S, --supress-summary    suppress summary
-    -V, --supress-visual     suppress visualizations of the trim
-        --version            Prints version information
+    -h, --help        Prints help information
+    -s, --sort-vec    Sort each vector lexicographically
+    -V, --version     Prints version information
 
 ARGS:
-    <files>...    files to trim; if '-' exists or none provided, stdin will be used
+    <root>    Root directory from which to start the search
 ```
